@@ -1,0 +1,31 @@
+{
+  "name": "@firstandthird/arc-cache",
+  "version": "0.0.1",
+  "description": "arc-cache for caching HTTPserving pages on AWS Lambda",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/firstandthird/arc-cache.git"
+  },
+  "author": "First & Third",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/firstandthird/arc-cache/issues"
+  },
+  "homepage": "https://github.com/firstandthird/arc-cache#readme",
+  "eslintConfig": {
+    "extends": "firstandthird"
+  },
+  "dependencies": {
+    "@firstandthird/memory-cache": "^1.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-firstandthird": "^4.3.0",
+    "eslint-plugin-import": "^2.17.3",
+    "tap": "^14.2.0"
+  }
+}
