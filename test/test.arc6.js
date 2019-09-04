@@ -18,13 +18,13 @@ tap.test('cache arc6', async t => {
   let result = await render(request);
   t.match(result, 'yes', 'method returns value');
   t.equal(count, 1, 'method executed first time');
-  // result = await render(request);
-  // t.match(result, 'yes', 'cached method returns value');
-  // t.equal(count, 1, 'cached method not executed');
-  // request.queryStringParameters.all = 'no';
-  // result = await render(request);
-  // t.match(result, 'no', 'new method returns value');
-  // t.equal(count, 2, 'new method executes, does not conflict with previous cached method');
+  result = await render(request);
+  t.match(result, 'yes', 'cached method returns value');
+  t.equal(count, 1, 'cached method not executed');
+  request.queryStringParameters.all = 'no';
+  result = await render(request);
+  t.match(result, 'no', 'new method returns value');
+  t.equal(count, 2, 'new method executes, does not conflict with previous cached method');
   t.end();
 });
 
