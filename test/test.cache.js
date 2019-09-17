@@ -40,7 +40,7 @@ tap.test('cacheReply defaults', async t => {
   };
   const request = {
     path: 'yes',
-    queryStringParameters: {
+    query: {
       all: 'yes'
     }
   };
@@ -50,12 +50,12 @@ tap.test('cacheReply defaults', async t => {
   t.equal(response, 1, 'handler returns value');
   response = await responseHandler(request);
   t.equal(response, 1, 'handler caches previous value');
-  request.queryStringParameters.update = true;
+  request.query.update = true;
   response = await responseHandler(request);
   t.equal(response, 2, 'handler updates when requested');
   const request2 = {
     path: 'no',
-    queryStringParameters: {
+    query: {
       skip: true
     }
   };
@@ -64,7 +64,7 @@ tap.test('cacheReply defaults', async t => {
   t.equal(response, 2, 'skip will not cache previous value ');
   const request3 = {
     path: 'no',
-    queryStringParameters: {
+    query: {
       stats: true
     }
   };
@@ -72,13 +72,13 @@ tap.test('cacheReply defaults', async t => {
   t.match(response, { hits: 3, misses: 3, sets: 4, removes: 0 }, 'get cache stats when requested');
   response = await responseHandler({
     path: 'left',
-    queryStringParameters: {
+    query: {
       yes: true
     }
   });
   const samePath = await responseHandler({
     path: 'left',
-    queryStringParameters: {
+    query: {
       yes: false,
       another: true
     }
@@ -99,7 +99,7 @@ tap.test('cacheReply non-defaults', async t => {
   };
   const request = {
     path: 'yes2',
-    queryStringParameters: {
+    query: {
       all: 'yes'
     }
   };
@@ -115,12 +115,12 @@ tap.test('cacheReply non-defaults', async t => {
   t.equal(response, 1, 'handler returns value');
   response = await responseHandler(request);
   t.equal(response, 1, 'handler caches previous value');
-  request.queryStringParameters.mupdate = true;
+  request.query.mupdate = true;
   response = await responseHandler(request);
   t.equal(response, 2, 'handler mupdates when requested');
   const request2 = {
     path: 'no2',
-    queryStringParameters: {
+    query: {
       drip: true
     }
   };
@@ -129,7 +129,7 @@ tap.test('cacheReply non-defaults', async t => {
   t.equal(response, 2, 'drip will not cache previous value ');
   const request3 = {
     path: 'no2',
-    queryStringParameters: {
+    query: {
       noway: true
     }
   };
@@ -137,13 +137,13 @@ tap.test('cacheReply non-defaults', async t => {
   t.match(response, { hits: 5, misses: 6, sets: 7, removes: 0 }, 'gets cache stats when requested');
   response = await responseHandler({
     path: 'left2',
-    queryStringParameters: {
+    query: {
       yes: true
     }
   });
   const samePath = await responseHandler({
     path: 'left2',
-    queryStringParameters: {
+    query: {
       yes: false,
       another: true
     }
@@ -152,19 +152,19 @@ tap.test('cacheReply non-defaults', async t => {
   let customKeyMethodCalled = false;
   const customKeyMethod = (req) => {
     customKeyMethodCalled = true;
-    return req.queryStringParameters.cacheKey;
+    return req.query.cacheKey;
   };
   const weirdResponseHandler = await arcCache.cacheReply(handler, { key: customKeyMethod });
   const customRequest = {
     path: 'customKey',
-    queryStringParameters: {
+    query: {
       cacheKey: 'key1'
     }
   };
   response = await weirdResponseHandler(customRequest);
   t.ok(customKeyMethodCalled, 'calls custom cache key generator');
   const sameResponse = await weirdResponseHandler(customRequest);
-  customRequest.queryStringParameters.cacheKey = 'key2';
+  customRequest.query.cacheKey = 'key2';
   const diffResponse = await weirdResponseHandler(customRequest);
   t.equal(response, sameResponse, 'customer cache key generator assigns keys');
   t.notEqual(response, diffResponse, 'customer cache key generator assigns keys');
