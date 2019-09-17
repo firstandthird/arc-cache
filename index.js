@@ -8,15 +8,13 @@ const cacheReply = function(fn, cacheOptions = {}) {
   const dropQueryParam = cacheOptions.dropQueryParam || 'update';
   const skipQueryParam = cacheOptions.skipQueryParam || 'skip';
   const statsQueryParam = cacheOptions.statsQueryParam || 'stats';
-  // method for generating cache keys:
-  const keyMethod = cacheOptions.key || (req => {
-    const queryKey = req.queryStringParameters ? 'queryStringParameters' : 'query';
-    const query = req[queryKey];
-    return cacheOptions.cacheQueryParams ? `response-${req.path}-${JSON.stringify(query)}`: `response-${req.path}`;
-  });
   return async function(req) {
     const queryKey = req.queryStringParameters ? 'queryStringParameters' : 'query';
     const query = req[queryKey];
+    // method for generating cache keys:
+    const keyMethod = cacheOptions.key || (keyRequest => {
+      return cacheOptions.cacheQueryParams ? `response-${keyRequest.path}-${JSON.stringify(query)}` : `response-${keyRequest.path}`;
+    });
     const memoKey = keyMethod(req);
     // return cache stats if requested:
     if (query[statsQueryParam]) {

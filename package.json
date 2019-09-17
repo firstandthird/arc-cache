@@ -20,8 +20,7 @@
     "extends": "firstandthird"
   },
   "dependencies": {
-    "@firstandthird/function-cache": "^1.0.1",
-    "@firstandthird/memory-cache": "^1.0.0"
+    "@firstandthird/function-cache": "^1.0.1"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
