@@ -1,6 +1,6 @@
 {
   "name": "@firstandthird/arc-cache",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "arc-cache for caching HTTPserving pages on AWS Lambda",
   "main": "index.js",
   "scripts": {
