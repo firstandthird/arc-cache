@@ -69,7 +69,8 @@ tap.test('cacheReply defaults', async t => {
     }
   };
   response = await responseHandler(request3);
-  t.match(response, { hits: 3, misses: 3, sets: 4, removes: 0 }, 'get cache stats when requested');
+  t.match(response.body, { hits: 3, misses: 3, sets: 4, removes: 0 }, 'get cache stats when requested');
+  t.match(response.headers['content-type'], 'application/json; charset=utf8');
   response = await responseHandler({
     path: 'left',
     query: {
@@ -134,7 +135,9 @@ tap.test('cacheReply non-defaults', async t => {
     }
   };
   response = await responseHandler(request3);
-  t.match(response, { hits: 5, misses: 6, sets: 7, removes: 0 }, 'gets cache stats when requested');
+  t.match(response.body, { hits: 5, misses: 6, sets: 7, removes: 0 }, 'gets cache stats when requested');
+  console.log(response);
+  t.match(response.headers['content-type'], 'application/json; charset=utf8');
   response = await responseHandler({
     path: 'left2',
     query: {
