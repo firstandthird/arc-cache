@@ -10,7 +10,7 @@ const cacheReply = function(fn, cacheOptions = {}) {
   const statsQueryParam = cacheOptions.statsQueryParam || 'stats';
   return async function(req) {
     const queryKey = req.queryStringParameters ? 'queryStringParameters' : 'query';
-    const query = req[queryKey];
+    const query = req[queryKey] || {};
     // method for generating cache keys:
     const keyMethod = cacheOptions.key || (keyRequest => {
       return cacheOptions.cacheQueryParams ? `response-${keyRequest.path}-${JSON.stringify(query)}` : `response-${keyRequest.path}`;
