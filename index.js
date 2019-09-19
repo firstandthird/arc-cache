@@ -22,7 +22,7 @@ const cacheReply = function(fn, cacheOptions = {}) {
         headers: {
           'content-type': 'application/json; charset=utf8'
         },
-        body: cache.cache.getStats()
+        body: JSON.stringify(cache.cache.getStats())
       };
     }
     // skip cache altogether if requested:
