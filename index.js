@@ -18,7 +18,12 @@ const cacheReply = function(fn, cacheOptions = {}) {
     const memoKey = keyMethod(req);
     // return cache stats if requested:
     if (query[statsQueryParam]) {
-      return cache.cache.getStats();
+      return {
+        headers: {
+          'content-type': 'application/json; charset=utf8'
+        },
+        body: cache.cache.getStats()
+      };
     }
     // skip cache altogether if requested:
     if (query[skipQueryParam]) {
