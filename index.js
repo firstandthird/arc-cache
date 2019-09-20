@@ -25,8 +25,8 @@ const cacheReply = function(fn, cacheOptions = {}) {
         body: JSON.stringify(cache.cache.getStats())
       };
     }
-    // skip cache altogether if requested:
-    if (query[skipQueryParam]) {
+    // skip cache altogether if requested or explicitly disabled:
+    if (query[skipQueryParam] || cacheOptions.enabled === false) {
       return fn(req);
     }
     // return the cached value:
