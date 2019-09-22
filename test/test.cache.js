@@ -199,3 +199,30 @@ tap.test('cacheReply enabled == false will skip caching', async t => {
   t.notEqual(response, 1, 'handler does not cache previous value if not enabled');
   t.end();
 });
+
+tap.test('accept log function', async t => {
+  t.plan(3);
+  let count = {};
+  const handler = async(req) => {
+    if (count[req.path]) {
+      count[req.path]++;
+    } else {
+      count[req.path] = 1;
+    }
+    return count[req.path];
+  };
+  const request = {
+    path: 'yes2',
+    query: {
+      all: 'yes'
+    }
+  };
+  const options = {};
+  const log = (tags, data) => {
+    t.match(tags, ['cache', 'hit']);
+    t.match(data, { key: 'response-yes2', query: { all: 'yes' } });
+  };
+  const responseHandler = await arcCache.cacheReply(handler, options, log);
+  let response = await responseHandler(request);
+  t.equal(response, 1, 'handler returns value');
+});
