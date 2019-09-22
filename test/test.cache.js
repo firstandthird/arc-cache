@@ -5,7 +5,7 @@ tap.test('cache', async t => {
   let count = 0;
   // declare a render function:
   const render = function(request) {
-    return arcCache.cache.memo(request.query.all, () => {
+    return arcCache.memo(request.query.all, () => {
       count++;
       return request.query.all;
     }, 60000, false);
@@ -65,7 +65,7 @@ tap.test('cacheReply defaults', async t => {
   const request3 = {
     path: 'no',
     query: {
-      stats: true
+      cacheStats: true
     }
   };
   response = await responseHandler(request3);

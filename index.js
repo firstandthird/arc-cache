@@ -1,13 +1,23 @@
-// const cache = require('@firstandthird/memory-cache');
-const FunctionCache = require('@firstandthird/function-cache');
-const cache = new FunctionCache(false);
+const MemoryCache = require('@firstandthird/memory-cache');
+const cache = new MemoryCache(false);
 
+const memo = async(key, fn, ttl, forceUpdate) => {
+  const value = cache.getCacheObject(key);
+  if (!forceUpdate && value) {
+    if (value.expires === 0 || value.expires > new Date().getTime()) {
+      return value.value;
+    }
+  }
+  const result = await fn();
+  cache.set(key, result, ttl);
+  return result;
+};
 
-const cacheReply = function(fn, cacheOptions = {}) {
+const cacheReply = function(fn, cacheOptions = {}, log = false) {
   const ttl = cacheOptions.ttl || (60000 * 10); // defaults to 10 minutes
   const dropQueryParam = cacheOptions.dropQueryParam || 'update';
   const skipQueryParam = cacheOptions.skipQueryParam || 'skip';
-  const statsQueryParam = cacheOptions.statsQueryParam || 'stats';
+  const statsQueryParam = cacheOptions.statsQueryParam || 'cacheStats';
   return async function(req) {
     const queryKey = req.queryStringParameters ? 'queryStringParameters' : 'query';
     const query = req[queryKey] || {};
@@ -19,10 +29,11 @@ const cacheReply = function(fn, cacheOptions = {}) {
     // return cache stats if requested:
     if (query[statsQueryParam]) {
       return {
+        statusCode: 200,
         headers: {
           'content-type': 'application/json; charset=utf8'
         },
-        body: JSON.stringify(cache.cache.getStats())
+        body: JSON.stringify(cache.getStats())
       };
     }
     // skip cache altogether if requested or explicitly disabled:
@@ -30,7 +41,10 @@ const cacheReply = function(fn, cacheOptions = {}) {
       return fn(req);
     }
     // return the cached value:
-    return cache.memo(
+    if (log) {
+      log(['cache', 'hit'], { key: memoKey, query });
+    }
+    return memo(
       memoKey,
       () => fn(req),
       ttl,
@@ -39,4 +53,4 @@ const cacheReply = function(fn, cacheOptions = {}) {
   };
 };
 
-module.exports = { cacheReply, cache };
+module.exports = { cacheReply, cache, memo };

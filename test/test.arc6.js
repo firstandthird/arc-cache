@@ -5,7 +5,7 @@ tap.test('cache arc6', async t => {
   let count = 0;
   // declare a render function:
   const render = function(request) {
-    return arcCache.cache.memo(request.queryStringParameters.all, () => {
+    return arcCache.memo(request.queryStringParameters.all, () => {
       count++;
       return request.queryStringParameters.all;
     }, 60000, false);
@@ -27,7 +27,6 @@ tap.test('cache arc6', async t => {
   t.equal(count, 2, 'new method executes, does not conflict with previous cached method');
   t.end();
 });
-
 
 tap.test('cacheReply defaults', async t => {
   let count = {};
@@ -66,7 +65,7 @@ tap.test('cacheReply defaults', async t => {
   const request3 = {
     path: 'no',
     queryStringParameters: {
-      stats: true
+      cacheStats: true
     }
   };
   response = await responseHandler(request3);
