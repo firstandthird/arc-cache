@@ -13,7 +13,7 @@ const memo = async(key, fn, ttl, forceUpdate) => {
   return result;
 };
 
-const cacheReply = function(fn, cacheOptions = {}, log = false) {
+const cacheReply = function(fn, cacheOptions = {}) {
   const ttl = cacheOptions.ttl || (60000 * 10); // defaults to 10 minutes
   const dropQueryParam = cacheOptions.dropQueryParam || 'update';
   const skipQueryParam = cacheOptions.skipQueryParam || 'skip';
@@ -38,18 +38,33 @@ const cacheReply = function(fn, cacheOptions = {}, log = false) {
     }
     // skip cache altogether if requested or explicitly disabled:
     if (query[skipQueryParam] || cacheOptions.enabled === false) {
+      if (cacheOptions.log) {
+        cacheOptions.log(['cache', 'skip'], { key: memoKey, query });
+      }
       return fn(req);
     }
     // return the cached value:
-    if (log) {
-      log(['cache', 'hit'], { key: memoKey, query });
-    }
-    return memo(
+    const result = await memo(
       memoKey,
-      () => fn(req),
+      () => {
+        // log misses:
+        if (cacheOptions.log && !query[dropQueryParam]) {
+          cacheOptions.log(['cache', 'miss'], { key: memoKey, query });
+        }
+        return fn(req);
+      },
       ttl,
       query[dropQueryParam] // force-update cache if true
     );
+    // log if update or hit:
+    if (cacheOptions.log) {
+      if (query[dropQueryParam]) {
+        cacheOptions.log(['cache', 'update'], { key: memoKey, query });
+      } else {
+        cacheOptions.log(['cache', 'hit'], { key: memoKey, query });
+      }
+    }
+    return result;
   };
 };
 
