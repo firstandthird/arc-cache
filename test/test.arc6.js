@@ -5,7 +5,7 @@ tap.test('cache arc6', async t => {
   let count = 0;
   // declare a render function:
   const render = function(request) {
-    return arcCache.cache.memo(request.queryStringParameters.all, () => {
+    return arcCache.memo(request.queryStringParameters.all, () => {
       count++;
       return request.queryStringParameters.all;
     }, 60000, false);
@@ -27,7 +27,6 @@ tap.test('cache arc6', async t => {
   t.equal(count, 2, 'new method executes, does not conflict with previous cached method');
   t.end();
 });
-
 
 tap.test('cacheReply defaults', async t => {
   let count = {};
@@ -66,11 +65,11 @@ tap.test('cacheReply defaults', async t => {
   const request3 = {
     path: 'no',
     queryStringParameters: {
-      stats: true
+      cacheStats: true
     }
   };
   response = await responseHandler(request3);
-  t.match(response.body, { hits: 3, misses: 3, sets: 4, removes: 0 }, 'get cache stats when requested');
+  t.match(response.body, JSON.stringify({ hits: 3, misses: 3, sets: 4, removes: 0 }), 'get cache stats when requested');
   t.match(response.headers['content-type'], 'application/json; charset=utf8');
   response = await responseHandler({
     path: 'left',
@@ -136,7 +135,7 @@ tap.test('cacheReply non-defaults', async t => {
     }
   };
   response = await responseHandler(request3);
-  t.match(response.body, { hits: 5, misses: 6, sets: 7, removes: 0 }, 'gets cache stats when requested');
+  t.match(response.body, JSON.stringify({ hits: 5, misses: 6, sets: 7, removes: 0 }), 'gets cache stats when requested');
   t.match(response.headers['content-type'], 'application/json; charset=utf8');
   response = await responseHandler({
     path: 'left2',

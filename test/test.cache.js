@@ -5,7 +5,7 @@ tap.test('cache', async t => {
   let count = 0;
   // declare a render function:
   const render = function(request) {
-    return arcCache.cache.memo(request.query.all, () => {
+    return arcCache.memo(request.query.all, () => {
       count++;
       return request.query.all;
     }, 60000, false);
@@ -65,11 +65,11 @@ tap.test('cacheReply defaults', async t => {
   const request3 = {
     path: 'no',
     query: {
-      stats: true
+      cacheStats: true
     }
   };
   response = await responseHandler(request3);
-  t.match(response.body, { hits: 3, misses: 3, sets: 4, removes: 0 }, 'get cache stats when requested');
+  t.match(response.body, JSON.stringify({ hits: 3, misses: 3, sets: 4, removes: 0 }), 'get cache stats when requested');
   t.match(response.headers['content-type'], 'application/json; charset=utf8');
   response = await responseHandler({
     path: 'left',
@@ -135,8 +135,7 @@ tap.test('cacheReply non-defaults', async t => {
     }
   };
   response = await responseHandler(request3);
-  t.match(response.body, { hits: 5, misses: 6, sets: 7, removes: 0 }, 'gets cache stats when requested');
-  console.log(response);
+  t.match(response.body, JSON.stringify({ hits: 5, misses: 6, sets: 7, removes: 0 }), 'gets cache stats when requested');
   t.match(response.headers['content-type'], 'application/json; charset=utf8');
   response = await responseHandler({
     path: 'left2',
@@ -171,5 +170,59 @@ tap.test('cacheReply non-defaults', async t => {
   const diffResponse = await weirdResponseHandler(customRequest);
   t.equal(response, sameResponse, 'customer cache key generator assigns keys');
   t.notEqual(response, diffResponse, 'customer cache key generator assigns keys');
+  t.end();
+});
+
+tap.test('cacheReply enabled == false will skip caching', async t => {
+  let count = {};
+  const handler = async(req) => {
+    if (count[req.path]) {
+      count[req.path]++;
+    } else {
+      count[req.path] = 1;
+    }
+    return count[req.path];
+  };
+  const request = {
+    path: 'yes2',
+    query: {
+      all: 'yes'
+    }
+  };
+  const options = {
+    enabled: false
+  };
+  const responseHandler = await arcCache.cacheReply(handler, options);
+  let response = await responseHandler(request);
+  t.equal(response, 1, 'handler returns value');
+  response = await responseHandler(request);
+  t.notEqual(response, 1, 'handler does not cache previous value if not enabled');
+  t.end();
+});
+
+tap.test('cacheReply shouldCache method', async t => {
+  let count = 0;
+  const handler = async(req) => {
+    count++;
+  };
+  const request = {
+    path: 'yes',
+    query: {
+      all: 'yes'
+    }
+  };
+  let called = false;
+  const shouldCache = (input) => {
+    called = true;
+    return false;
+  };
+  const options = {
+    shouldCache
+  };
+  const responseHandler = await arcCache.cacheReply(handler, options);
+  let response = await responseHandler(request);
+  response = await responseHandler(request);
+  t.equal(count, 2, 'calls cache both times');
+  t.ok(called, 'calls shouldCache');
   t.end();
 });
