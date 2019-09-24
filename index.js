@@ -23,7 +23,8 @@ const cacheReply = function(fn, cacheOptions = {}) {
   // by default always return true:
   const shouldCache = cacheOptions.shouldCache ? cacheOptions.shouldCache : () => true;
   return async function(req) {
-    if (!shouldCache(req)) {
+    // skip if disabled or shouldCache function says no:
+    if (cacheOptions.enabled === false || !shouldCache(req)) {
       return fn(req);
     }
     const queryKey = req.queryStringParameters ? 'queryStringParameters' : 'query';
@@ -42,10 +43,6 @@ const cacheReply = function(fn, cacheOptions = {}) {
         },
         body: JSON.stringify(cache.getStats())
       };
-    }
-    // skip if disabled, duh:
-    if (cacheOptions.enabled === false) {
-      return fn(req);
     }
     // log and skip cache if requested:
     if (query[skipQueryParam]) {
