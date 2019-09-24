@@ -244,3 +244,30 @@ tap.test('cacheReply log method', async t => {
   t.match(dataList, { key: 'response-no', query: { skip: true } });
   t.end();
 });
+
+tap.test('cacheReply shouldCache method', async t => {
+  let count = 0;
+  const handler = async(req) => {
+    count++;
+  };
+  const request = {
+    path: 'yes',
+    query: {
+      all: 'yes'
+    }
+  };
+  let called = false;
+  const shouldCache = (input) => {
+    called = true;
+    return false;
+  };
+  const options = {
+    shouldCache
+  };
+  const responseHandler = await arcCache.cacheReply(handler, options);
+  let response = await responseHandler(request);
+  response = await responseHandler(request);
+  t.equal(count, 2, 'calls cache both times');
+  t.ok(called, 'calls shouldCache');
+  t.end();
+});

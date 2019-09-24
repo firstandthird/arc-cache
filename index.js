@@ -18,7 +18,12 @@ const cacheReply = function(fn, cacheOptions = {}) {
   const dropQueryParam = cacheOptions.dropQueryParam || 'update';
   const skipQueryParam = cacheOptions.skipQueryParam || 'skip';
   const statsQueryParam = cacheOptions.statsQueryParam || 'cacheStats';
+  // by default always return true:
+  const shouldCache = cacheOptions.shouldCache ? cacheOptions.shouldCache : () => true;
   return async function(req) {
+    if (!shouldCache(req)) {
+      return fn(req);
+    }
     const queryKey = req.queryStringParameters ? 'queryStringParameters' : 'query';
     const query = req[queryKey] || {};
     // method for generating cache keys:
