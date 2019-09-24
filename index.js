@@ -18,6 +18,8 @@ const cacheReply = function(fn, cacheOptions = {}) {
   const dropQueryParam = cacheOptions.dropQueryParam || 'update';
   const skipQueryParam = cacheOptions.skipQueryParam || 'skip';
   const statsQueryParam = cacheOptions.statsQueryParam || 'cacheStats';
+  // by default log does nothing
+  const log = cacheOptions.log ? cacheOptions.log : () => {};
   // by default always return true:
   const shouldCache = cacheOptions.shouldCache ? cacheOptions.shouldCache : () => true;
   return async function(req) {
@@ -41,35 +43,35 @@ const cacheReply = function(fn, cacheOptions = {}) {
         body: JSON.stringify(cache.getStats())
       };
     }
-    // skip cache altogether if requested or explicitly disabled:
-    if (query[skipQueryParam] || cacheOptions.enabled === false) {
-      if (cacheOptions.log) {
-        cacheOptions.log(['cache', 'skip'], { key: memoKey, query });
-      }
+    // skip if disabled, duh:
+    if (cacheOptions.enabled === false) {
+      return fn(req);
+    }
+    // log and skip cache if requested:
+    if (query[skipQueryParam]) {
+      log(['cache', 'skip'], { key: memoKey, query });
       return fn(req);
     }
     // return the cached value:
-    let miss = false;
+    let hit = true;
     const result = await memo(
       memoKey,
       () => {
-        // log misses:
-        if (cacheOptions.log && !query[dropQueryParam]) {
-          miss = true;
-          cacheOptions.log(['cache', 'miss'], { key: memoKey, query });
+        // log misses and updates:
+        hit = false;
+        if (query[dropQueryParam]) {
+          log(['cache', 'update'], { key: memoKey, query });
+        } else {
+          log(['cache', 'miss'], { key: memoKey, query });
         }
         return fn(req);
       },
       ttl,
       query[dropQueryParam] // force-update cache if true
     );
-    // log if update or hit:
-    if (cacheOptions.log) {
-      if (query[dropQueryParam]) {
-        cacheOptions.log(['cache', 'update'], { key: memoKey, query });
-      } else if (!miss) {
-        cacheOptions.log(['cache', 'hit'], { key: memoKey, query });
-      }
+    // log if its a hit:
+    if (hit) {
+      log(['cache', 'hit'], { key: memoKey, query });
     }
     return result;
   };
