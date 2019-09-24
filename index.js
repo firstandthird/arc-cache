@@ -49,11 +49,13 @@ const cacheReply = function(fn, cacheOptions = {}) {
       return fn(req);
     }
     // return the cached value:
+    let miss = false;
     const result = await memo(
       memoKey,
       () => {
         // log misses:
         if (cacheOptions.log && !query[dropQueryParam]) {
+          miss = true;
           cacheOptions.log(['cache', 'miss'], { key: memoKey, query });
         }
         return fn(req);
@@ -65,7 +67,7 @@ const cacheReply = function(fn, cacheOptions = {}) {
     if (cacheOptions.log) {
       if (query[dropQueryParam]) {
         cacheOptions.log(['cache', 'update'], { key: memoKey, query });
-      } else {
+      } else if (!miss) {
         cacheOptions.log(['cache', 'hit'], { key: memoKey, query });
       }
     }
