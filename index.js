@@ -1,6 +1,8 @@
 const MemoryCache = require('@firstandthird/memory-cache');
 const cache = new MemoryCache(false);
 
+const timestamps = {};
+
 const memo = async(key, fn, ttl, forceUpdate) => {
   const value = cache.getCacheObject(key);
   if (!forceUpdate && value) {
@@ -9,6 +11,7 @@ const memo = async(key, fn, ttl, forceUpdate) => {
     }
   }
   const result = await fn();
+  timestamps[key] = new Date().getTime();
   cache.set(key, result, ttl);
   return result;
 };
@@ -69,6 +72,10 @@ const cacheReply = function(fn, cacheOptions = {}) {
     // log if its a hit:
     if (hit) {
       log(['cache', 'hit'], { key: memoKey, query });
+      // also set the x-cache header in the response:
+      if (timestamps[memoKey] && result.headers) {
+        result.headers['x-cache'] = timestamps[memoKey];
+      }
     }
     return result;
   };
