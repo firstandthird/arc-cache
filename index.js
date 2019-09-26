@@ -2,11 +2,9 @@ const MemoryCache = require('@firstandthird/memory-cache');
 const cache = new MemoryCache(false);
 
 const memo = async(key, fn, ttl, forceUpdate) => {
-  const value = cache.getCacheObject(key);
-  if (!forceUpdate && value) {
-    if (value.expires === 0 || value.expires > new Date().getTime()) {
-      return value.value;
-    }
+  const value = cache.get(key);
+  if (value && !forceUpdate) {
+    return value;
   }
   const result = await fn();
   // always try to set the header showing when it was cached:
