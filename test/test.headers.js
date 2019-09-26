@@ -6,9 +6,8 @@ tap.test('cacheReply x-cache header', async t => {
   const handler = async(req) => {
     count++;
     return {
-      headers: {},
       body: count
-    }
+    };
   };
   const request = {
     path: 'yes',
