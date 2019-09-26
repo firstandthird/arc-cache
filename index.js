@@ -9,11 +9,12 @@ const memo = async(key, fn, ttl, forceUpdate) => {
     }
   }
   const result = await fn();
-  // always set the header showing when it was cached:
-  if (!result.headers) {
-    result.headers = { 'x-cache': new Date().getTime() };
-  } else {
-    result.headers['x-cache'] = new Date().getTime();
+  // always try to set the header showing when it was cached:
+  if (result instanceof Object) {
+    if (!result.headers) {
+      result.headers = {};
+    }
+    result.headers['x-arc-cache'] = new Date().getTime();
   }
   cache.set(key, result, ttl);
   return result;

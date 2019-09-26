@@ -18,6 +18,6 @@ tap.test('cacheReply x-cache header', async t => {
   const responseHandler = await arcCache.cacheReply(handler);
   let response = await responseHandler(request);
   response = await responseHandler(request);
-  t.ok(response.headers['x-cache']);
+  t.ok(response.headers['x-arc-cache']);
   t.end();
 });
