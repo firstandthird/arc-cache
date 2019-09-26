@@ -226,3 +226,25 @@ tap.test('cacheReply shouldCache method', async t => {
   t.ok(called, 'calls shouldCache');
   t.end();
 });
+
+tap.test('cacheReply ttl: -1 should cache permanently', async t => {
+  let count = 0;
+  const handler = async(req) => {
+    count++;
+    return count;
+  };
+  const request = {
+    path: 'yes-1',
+    query: {
+      all: 'yes'
+    }
+  };
+  const options = {
+    ttl: -1
+  };
+  const responseHandler = await arcCache.cacheReply(handler, options);
+  let response = await responseHandler(request);
+  const r = arcCache.cache.getCacheObject('response-yes-1');
+  t.equal(r.expires, -1);
+  t.end();
+});
