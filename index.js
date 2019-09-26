@@ -4,7 +4,7 @@ const cache = new MemoryCache(false);
 const memo = async(key, fn, ttl, forceUpdate) => {
   const value = cache.getCacheObject(key);
   if (!forceUpdate && value) {
-    if (value.expires === 0 || value.expires > new Date().getTime()) {
+    if (value.expires < 0 || value.expires > new Date().getTime()) {
       return value.value;
     }
   }

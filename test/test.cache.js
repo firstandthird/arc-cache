@@ -246,5 +246,7 @@ tap.test('cacheReply ttl: -1 should cache permanently', async t => {
   let response = await responseHandler(request);
   const r = arcCache.cache.getCacheObject('response-yes-1');
   t.equal(r.expires, -1);
+  const result = await arcCache.memo('response-yes-1');
+  t.equal(result, 1);
   t.end();
 });
